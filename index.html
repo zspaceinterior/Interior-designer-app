@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#171717">
+<title>Interior Designer Pro</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f5f5;color:#222}
+header{background:#171717;color:white;padding:18px 20px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:22px} header p{margin:5px 0 0;color:#bbb;font-size:13px}
+nav{display:flex;gap:8px;overflow:auto;padding:12px;background:white;border-bottom:1px solid #ddd}
+nav button{border:0;background:#eee;padding:10px 14px;border-radius:20px;white-space:nowrap}
+nav button.active{background:#171717;color:#fff}
+main{max-width:1000px;margin:auto;padding:18px}
+section{display:none}.show{display:block}
+.card{background:white;border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 2px 10px #00000012}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label{font-size:13px;font-weight:bold;display:block;margin-bottom:6px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:15px}
+textarea{min-height:100px;resize:vertical}
+.btn{background:#171717;color:white;border:0;padding:12px 16px;border-radius:10px;font-weight:bold;margin-top:10px}
+.btn.light{background:#eee;color:#222}.danger{background:#b3261e}
+h2{margin-top:0}.stat{font-size:28px;font-weight:bold}.muted{color:#777;font-size:13px}
+.project{border:1px solid #ddd;border-radius:12px;padding:14px;margin-top:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}
+img.preview{width:100%;max-height:300px;object-fit:cover;border-radius:12px;margin-top:10px}
+.empty{text-align:center;padding:30px;color:#777}
+footer{text-align:center;color:#888;padding:25px;font-size:12px}
+</style>
+</head>
+<body>
+<header><h1>Interior Designer Pro</h1><p>Client • Project • Budget Manager</p></header>
+
+<nav>
+<button class="active" onclick="showTab('dashboard',this)">Dashboard</button>
+<button onclick="showTab('projects',this)">Projects</button>
+<button onclick="showTab('clients',this)">Clients</button>
+<button onclick="showTab('budget',this)">Budget</button>
+<button onclick="showTab('notes',this)">Notes</button>
+</nav>
+
+<main>
+<section id="dashboard" class="show">
+<div class="grid">
+<div class="card"><div class="stat" id="projectCount">0</div><div class="muted">Projects</div></div>
+<div class="card"><div class="stat" id="clientCount">0</div><div class="muted">Clients</div></div>
+<div class="card"><div class="stat" id="budgetTotal">₹0</div><div class="muted">Total Budget</div></div>
+</div>
+<div class="card"><h2>Quick Start</h2><p>Create a client and project, then track your budget and notes.</p><button class="btn" onclick="showTab('projects')">Add Project</button></div>
+</section>
+
+<section id="projects">
+<div class="card"><h2>New Project</h2>
+<div class="grid">
+<div><label>Project Name</label><input id="pname" placeholder="Living Room Design"></div>
+<div><label>Client</label><input id="pclient" placeholder="Client name"></div>
+<div><label>Budget (₹)</label><input id="pbudget" type="number" placeholder="250000"></div>
+<div><label>Status</label><select id="pstatus"><option>Planning</option><option>In Progress</option><option>Completed</option></select></div>
+</div>
+<button class="btn" onclick="addProject()">Save Project</button>
+</div>
+<div class="card"><h2>Projects</h2><div id="projectList"></div></div>
+</section>
+
+<section id="clients">
+<div class="card"><h2>New Client</h2>
+<div class="grid">
+<div><label>Name</label><input id="cname" placeholder="Client name"></div>
+<div><label>Phone</label><input id="cphone" placeholder="+91..."></div>
+<div><label>Email</label><input id="cemail" type="email" placeholder="client@email.com"></div>
+</div>
+<button class="btn" onclick="addClient()">Save Client</button>
+</div>
+<div class="card"><h2>Clients</h2><div id="clientList"></div></div>
+</section>
+
+<section id="budget">
+<div class="card"><h2>Budget Calculator</h2>
+<div class="grid">
+<div><label>Furniture</label><input id="b1" type="number" value="0"></div>
+<div><label>Carpentry</label><input id="b2" type="number" value="0"></div>
+<div><label>Lighting</label><input id="b3" type="number" value="0"></div>
+<div><label>Tiles / Flooring</label><input id="b4" type="number" value="0"></div>
+<div><label>Paint</label><input id="b5" type="number" value="0"></div>
+<div><label>Other</label><input id="b6" type="number" value="0"></div>
+</div>
+<button class="btn" onclick="calcBudget()">Calculate</button>
+<h2 id="calcResult">₹0</h2>
+</div>
+</section>
+
+<section id="notes">
+<div class="card"><h2>Project Notes</h2>
+<label>Note</label><textarea id="noteText" placeholder="Measurements, material ideas, client requirements..."></textarea>
+<button class="btn" onclick="addNote()">Save Note</button>
+</div>
+<div class="card"><h2>Saved Notes</h2><div id="noteList"></div></div>
+</section>
+</main>
+
+<footer>Interior Designer Pro • Data is stored locally on this device</footer>
+
+<script>
+const get=(k)=>JSON.parse(localStorage.getItem(k)||'[]');
+const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+function showTab(id,btn){
+ document.querySelectorAll('section').forEach(x=>x.classList.remove('show'));
+ document.getElementById(id).classList.add('show');
+ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+ if(btn)btn.classList.add('active');
+ render();
+}
+function addProject(){
+ let name=pname.value.trim();if(!name)return alert('Project name enter karo');
+ let a=get('projects');a.push({id:Date.now(),name,client:pclient.value,budget:+pbudget.value||0,status:pstatus.value});
+ set('projects',a);pname.value='';pclient.value='';pbudget.value='';render();alert('Project saved');
+}
+function delProject(id){set('projects',get('projects').filter(x=>x.id!==id));render()}
+function addClient(){
+ let name=cname.value.trim();if(!name)return alert('Client name enter karo');
+ let a=get('clients');a.push({id:Date.now(),name,phone:cphone.value,email:cemail.value});
+ set('clients',a);cname.value='';cphone.value='';cemail.value='';render();alert('Client saved');
+}
+function delClient(id){set('clients',get('clients').filter(x=>x.id!==id));render()}
+function calcBudget(){
+ let t=['b1','b2','b3','b4','b5','b6'].reduce((s,id)=>s+(+document.getElementById(id).value||0),0);
+ document.getElementById('calcResult').textContent='₹'+t.toLocaleString('en-IN');
+}
+function addNote(){
+ let t=noteText.value.trim();if(!t)return;
+ let a=get('notes');a.unshift({id:Date.now(),text:t,date:new Date().toLocaleString()});set('notes',a);noteText.value='';render();
+}
+function delNote(id){set('notes',get('notes').filter(x=>x.id!==id));render()}
+function render(){
+ let p=get('projects'),c=get('clients'),n=get('notes');
+ projectCount.textContent=p.length;clientCount.textContent=c.length;
+ budgetTotal.textContent='₹'+p.reduce((s,x)=>s+x.budget,0).toLocaleString('en-IN');
+ projectList.innerHTML=p.length?p.map(x=>`<div class="project"><b>${esc(x.name)}</b><br><span class="muted">${esc(x.client||'No client')} • ${esc(x.status)}</span><br><b>₹${x.budget.toLocaleString('en-IN')}</b><br><button class="btn danger" onclick="delProject(${x.id})">Delete</button></div>`).join(''):'<div class="empty">No projects yet</div>';
+ clientList.innerHTML=c.length?c.map(x=>`<div class="project"><b>${esc(x.name)}</b><br>${esc(x.phone||'')}<br>${esc(x.email||'')}<br><button class="btn danger" onclick="delClient(${x.id})">Delete</button></div>`).join(''):'<div class="empty">No clients yet</div>';
+ noteList.innerHTML=n.length?n.map(x=>`<div class="project">${esc(x.text)}<br><span class="muted">${x.date}</span><br><button class="btn danger" onclick="delNote(${x.id})">Delete</button></div>`).join(''):'<div class="empty">No notes yet</div>';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+render();
+</script>
+</body>
+</html>
